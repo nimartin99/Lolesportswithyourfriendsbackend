@@ -6,6 +6,10 @@ const dataSchema = new mongoose.Schema({
         required: true,
         type: String,
     },
+    role: {
+        required: true,
+        type: String,
+    },
     team: {
         required: true,
         type: Schema.Types.ObjectId,

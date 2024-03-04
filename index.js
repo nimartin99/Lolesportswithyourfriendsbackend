@@ -62,6 +62,7 @@ const accountRoutes = require('./routes/accountRoutes');
 app.use('/api', routes);
 require('./routes/auth.routes')(app);
 require('./routes/user.routes')(app);
+require('./routes/team.routes')(app);
 require('./routes/match.routes')(app);
 require('./routes/bet.routes')(app);
 require('./routes/evaluation.routes')(app);
@@ -74,7 +75,7 @@ async function initial() {
         })
     }
 
-    const teams = ["G2 Esports", "Fnatic", "Team BDS", "SK Gaming", "Team Vitality", "Team Heretics", "MAD Lions KOI", "GIANTX", "Rogue", "Karmine Corp"];
+    let teams = ["G2 Esports", "Fnatic", "Team BDS", "SK Gaming", "Team Vitality", "Team Heretics", "MAD Lions KOI", "GIANTX", "Rogue", "Karmine Corp"];
     const abbreviations = ["G2", "FNC", "BDS", "SK", "VIT", "TH", "MDK", "GX", "RGE", "KC"];
 
     // Check if teams need to be created
@@ -87,4 +88,29 @@ async function initial() {
             })
         }))
     }
+
+    const roles = ['coach', 'top', 'jungle', 'mid', 'bot', 'support'];
+    teams = await db.TeamModel.find({}).populate("players");
+
+    // Clear all players from teams
+    // await Promise.all(teams.map(async (team) => {
+    //     await db.TeamModel.findByIdAndUpdate(team._id, {
+    //         players: [],
+    //     })
+    // }))
+
+    await Promise.all(teams.map(async (team) => {
+        await Promise.all(roles.map(async role => {
+            if(!team.players.some(player => player.role === role)) {
+                const player = await db.PlayerModel.create({
+                    name: 'Unknown',
+                    role: role,
+                    team: team._id,
+                });
+                await db.TeamModel.findByIdAndUpdate(team._id, {
+                    $push: { players: player._id  },
+                })
+            }
+        }))
+    }))
 }

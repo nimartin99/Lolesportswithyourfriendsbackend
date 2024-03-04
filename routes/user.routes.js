@@ -18,9 +18,4 @@ module.exports = function(app) {
     app.get("/api/user/account", [authJwt.verifyToken], controller.getAccount);
 
     app.get("/api/accounts", [authJwt.verifyToken], controller.getAccounts);
-
-    app.get(
-        "/api/teams",
-        [authJwt.verifyToken], teamController.getTeams
-    );
 };

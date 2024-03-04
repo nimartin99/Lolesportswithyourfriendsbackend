@@ -23,11 +23,11 @@ const dataSchema = new mongoose.Schema({
         required: true,
         type: Number,
     },
-    damageShare: {
+    championDamageShare: {
         required: true,
         type: Number,
     },
-    champion: {
+    championId: {
         required: true,
         type: String,
     },
@@ -35,7 +35,7 @@ const dataSchema = new mongoose.Schema({
         required: true,
         type: Number,
     },
-    goldEarned: {
+    totalGoldEarned: {
         required: true,
         type: Number,
     },
