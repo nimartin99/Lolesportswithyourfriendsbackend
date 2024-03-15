@@ -65,11 +65,30 @@ exports.postEvaluation = async (req, res) => {
             lifeSteal: redTeam.players[i].lifeSteal,
             wardsPlaced: redTeam.players[i].wardsPlaced,
             wardsDestroyed: redTeam.players[i].wardsDestroyed,
-            basePoints: blueTeam.players[i].basePoints,
+            basePoints: redTeam.players[i].basePoints,
         };
         const redPlayerEvaluation = await db.PlayerEvaluationModel.create(Object.assign({}, redPlayer));
         redTeamPlayers.push(redPlayerEvaluation._id);
     }
+
+    // Coach stuff
+    const blueCoachPlayerDB = await db.PlayerModel.findOne({
+        name: blueTeam.coach.name,
+    })
+    const blueTeamCoachEvaluation = await db.PlayerEvaluationModel.create({
+        player: blueCoachPlayerDB._id,
+        basePoints: blueTeam.coach.basePoints,
+    });
+    blueTeamPlayers.push(blueTeamCoachEvaluation._id);
+
+    const redCoachPlayerDB = await db.PlayerModel.findOne({
+        name: redTeam.coach.name,
+    })
+    const redTeamCoachEvaluation = await db.PlayerEvaluationModel.create({
+        player: redCoachPlayerDB._id,
+        basePoints: redTeam.coach.basePoints,
+    });
+    redTeamPlayers.push(redTeamCoachEvaluation._id);
 
     let evaluation = {
         winnerTeam: team._id,
