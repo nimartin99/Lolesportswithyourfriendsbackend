@@ -16,10 +16,6 @@ const dataSchema = new mongoose.Schema({
         required: true,
         type: Date
     },
-    bets: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Bet',
-    }],
     evaluation: {
         type: Schema.Types.ObjectId,
         ref: 'Evaluation'

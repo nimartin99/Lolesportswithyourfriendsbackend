@@ -15,6 +15,10 @@ const dataSchema = new mongoose.Schema({
         required: false,
         type: Schema.Types.ObjectId,
         ref: 'Role'
+    },
+    score: {
+        required: false,
+        type: Number,
     }
 })
 

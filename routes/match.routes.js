@@ -20,4 +20,9 @@ module.exports = function(app) {
         "/api/matches",
         [authJwt.verifyToken], controller.getMatches
     );
+
+    app.get(
+        "/api/matchDays",
+        [authJwt.verifyToken], controller.getMatchDays
+    );
 };

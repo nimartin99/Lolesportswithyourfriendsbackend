@@ -83,6 +83,12 @@ const dataSchema = new mongoose.Schema({
         required: true,
         type: Number,
     },
+
+    // Custom stuff
+    basePoints: {
+        required: true,
+        type: Number,
+    }
 })
 
 module.exports = mongoose.model('PlayerEvaluation', dataSchema)

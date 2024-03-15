@@ -15,4 +15,18 @@ module.exports = function(app) {
         [authJwt.verifyToken], controller.postEvaluation
     );
 
+    app.get(
+        "/api/evaluation/:evaluationId",
+        [authJwt.verifyToken], controller.getEvaluation
+    );
+
+    app.get(
+        "/api/evaluationsOfMatchDay/:evaluationId",
+        [authJwt.verifyToken], controller.getEvaluationsOfMatchDay
+    );
+
+    app.post(
+        "/api/finishMatchDay",
+        [authJwt.verifyToken], controller.finishMatchDay
+    );
 };

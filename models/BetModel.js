@@ -7,10 +7,29 @@ const dataSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Account'
     },
-    team: {
-        required: true,
+    topPlayer: {
         type: Schema.Types.ObjectId,
-        ref: 'Team'
+        ref: 'Player'
+    },
+    junglePlayer: {
+        type: Schema.Types.ObjectId,
+        ref: 'Player'
+    },
+    midPlayer: {
+        type: Schema.Types.ObjectId,
+        ref: 'Player'
+    },
+    botPlayer: {
+        type: Schema.Types.ObjectId,
+        ref: 'Player'
+    },
+    supportPlayer: {
+        type: Schema.Types.ObjectId,
+        ref: 'Player'
+    },
+    coachPlayer: {
+        type: Schema.Types.ObjectId,
+        ref: 'Player'
     },
 })
 

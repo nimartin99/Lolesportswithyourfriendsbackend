@@ -36,9 +36,10 @@ exports.postEvaluation = async (req, res) => {
             lifeSteal: blueTeam.players[i].lifeSteal,
             wardsPlaced: blueTeam.players[i].wardsPlaced,
             wardsDestroyed: blueTeam.players[i].wardsDestroyed,
+            basePoints: blueTeam.players[i].basePoints,
         };
         const bluePlayerEvaluation = await db.PlayerEvaluationModel.create(Object.assign({}, bluePlayer));
-        blueTeamPlayers.push(bluePlayerEvaluation);
+        blueTeamPlayers.push(bluePlayerEvaluation._id);
 
         const redPlayerDB = await db.PlayerModel.findOne({
             name: redTeam.players[i].name,
@@ -64,9 +65,10 @@ exports.postEvaluation = async (req, res) => {
             lifeSteal: redTeam.players[i].lifeSteal,
             wardsPlaced: redTeam.players[i].wardsPlaced,
             wardsDestroyed: redTeam.players[i].wardsDestroyed,
+            basePoints: blueTeam.players[i].basePoints,
         };
         const redPlayerEvaluation = await db.PlayerEvaluationModel.create(Object.assign({}, redPlayer));
-        redTeamPlayers.push(redPlayerEvaluation);
+        redTeamPlayers.push(redPlayerEvaluation._id);
     }
 
     let evaluation = {
@@ -102,4 +104,134 @@ exports.postEvaluation = async (req, res) => {
     });
 
     res.status(201).send({ match });
+};
+
+exports.getEvaluation = async (req, res) => {
+    if(!req.params.evaluationId) {
+        res.status(400).send();
+    }
+    const evaluation = db.EvaluationModel.findById(req.params.evaluationId)
+        .populate({ path: 'blueTeam.players' })
+        .populate({ path: 'readTeam.players' });
+    console.log(evaluation);
+    res.status(200).send( evaluation );
+};
+
+exports.getEvaluationsOfMatchDay = async (req, res) => {
+    if(!req.params.evaluationId) {
+        res.status(400).send();
+        return;
+    }
+
+    const matchDay = await db.MatchDayModel.findById(req.params.evaluationId)
+        .populate("matches");
+    if(!matchDay) {
+        res.status(400).send();
+        return;
+    }
+
+    const matchDayEvaluations = [];
+    await Promise.all(matchDay.matches.map(async (match) => {
+        if(match.evaluation) {
+            const evaluation = await db.EvaluationModel.findById(match.evaluation);
+            let i;
+            let j = 6;
+            for (i = 0; i < j; i++) {
+                evaluation.blueTeam.players[i] = await db.PlayerEvaluationModel.findById(evaluation.blueTeam.players[i]);
+                evaluation.redTeam.players[i] = await db.PlayerEvaluationModel.findById(evaluation.redTeam.players[i]);
+            }
+            matchDayEvaluations.push(evaluation);
+        }
+    }));
+    res.status(200).send(matchDayEvaluations);
+};
+
+exports.finishMatchDay = async (req, res) => {
+    const matchDay = await db.MatchDayModel.findById(req.body.matchDayId)
+        .populate("matches")
+        .populate({ path: "bets", populate: ["topPlayer", "junglePlayer", "midPlayer", "botPlayer", "supportPlayer", "coachPlayer"]});
+    console.log(matchDay);
+    if(!req.body.matchDayId || !matchDay) {
+        res.status(400).send();
+        return;
+    }
+
+    if(matchDay.state === "finished") {
+        res.status(423).send();
+    }
+
+    const matchDayPlayerEvaluations = [];
+    await Promise.all(matchDay.matches.map(async (match) => {
+        if(match.evaluation) {
+            const evaluation = await db.EvaluationModel.findById(match.evaluation);
+            let i;
+            let j = 6;
+            for (i = 0; i < j; i++) {
+                matchDayPlayerEvaluations.push(await db.PlayerEvaluationModel.findById(evaluation.blueTeam.players[i]));
+                matchDayPlayerEvaluations.push(await db.PlayerEvaluationModel.findById(evaluation.redTeam.players[i]));
+            }
+        }
+    }));
+    // console.log(matchDayPlayerEvaluations);
+    await Promise.all(matchDay.bets.map(async (bet) => {
+        const topPlayer = matchDayPlayerEvaluations.find((playerEvaluation) => {
+            if(playerEvaluation !== null && playerEvaluation.player.equals(bet.topPlayer._id)) {
+                return playerEvaluation;
+            }
+        });
+        const junglePlayer = matchDayPlayerEvaluations.find((playerEvaluation) => {
+            if(playerEvaluation !== null && playerEvaluation.player.equals(bet.junglePlayer._id)) {
+                return playerEvaluation;
+            }
+        });
+        const midPlayer = matchDayPlayerEvaluations.find((playerEvaluation) => {
+            if(playerEvaluation !== null && playerEvaluation.player.equals(bet.midPlayer._id)) {
+                return playerEvaluation;
+            }
+        });
+        const botPlayer = matchDayPlayerEvaluations.find((playerEvaluation) => {
+            if(playerEvaluation !== null && playerEvaluation.player.equals(bet.botPlayer._id)) {
+                return playerEvaluation;
+            }
+        });
+        const supportPlayer = matchDayPlayerEvaluations.find((playerEvaluation) => {
+            if(playerEvaluation !== null && playerEvaluation.player.equals(bet.supportPlayer._id)) {
+                return playerEvaluation;
+            }
+        });
+        const coachPlayer = matchDayPlayerEvaluations.find((playerEvaluation) => {
+            if(playerEvaluation !== null && playerEvaluation.player.equals(bet.coachPlayer._id)) {
+                return playerEvaluation;
+            }
+        });
+        let accountScore = 0;
+        if(topPlayer) {
+            accountScore += topPlayer.basePoints;
+        }
+        if(junglePlayer) {
+            accountScore += junglePlayer.basePoints;
+        }
+        if(midPlayer) {
+            accountScore += midPlayer.basePoints;
+        }
+        if(botPlayer) {
+            accountScore += botPlayer.basePoints;
+        }
+        if(supportPlayer) {
+            accountScore += supportPlayer.basePoints;
+        }
+        if(coachPlayer) {
+            accountScore += coachPlayer.basePoints;
+        }
+        await db.AccountModel.findByIdAndUpdate(bet.account, {
+            $inc: { score: accountScore }
+        })
+    }))
+
+    await db.MatchDayModel.findByIdAndUpdate(matchDay._id, {
+        state: 'finished',
+    });
+
+
+    res.status(200).send();
 };

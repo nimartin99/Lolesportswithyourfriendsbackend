@@ -10,6 +10,7 @@ db.RoleModel = require("./RoleModel");
 db.TeamModel = require("./TeamModel");
 db.PlayerModel = require("./PlayerModel");
 db.MatchModel = require("./MatchModel");
+db.MatchDayModel = require("./MatchDayModel");
 db.BetModel = require("./BetModel");
 db.EvaluationModel = require("./EvaluationModel");
 db.PlayerEvaluationModel = require("./PlayerEvaluationModel");

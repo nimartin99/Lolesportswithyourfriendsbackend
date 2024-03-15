@@ -14,4 +14,9 @@ module.exports = function(app) {
         "/api/bet",
         [authJwt.verifyToken], controller.postBet
     );
+
+    app.get(
+        "/api/myroster/:matchDate",
+        [authJwt.verifyToken], controller.getMyRoster
+    );
 };
