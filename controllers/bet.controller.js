@@ -1,17 +1,22 @@
 const db = require("./../models");
 
 exports.postBet = async (req, res) => {
+    const matchDate = new Date(req.body.matchDate);
     // Check if there is already a bet for match day from this account
-    const matchDay = await db.MatchDayModel.findOne({
-        date: req.body.matchDate,
+    const matchDays = await db.MatchDayModel.find();
+    const matchDayUnpopulated = matchDays.find((matchDay) => {
+        return matchDay.date.getTime() === matchDate.getTime();
+        // console.log(typeof matchDay.date, matchDay.date, ' === ', typeof matchDate, matchDate, ' -> ', matchDay.date.getTime() === matchDate.getTime());
     })
-        .populate("bets")
-        .populate("matches");
 
     // If the bet is made for a day that doesn't exist as matchDay
-    if(!matchDay) {
-        res.status(404).send({ error: "No match day found for the given bet."});
+    if(!matchDayUnpopulated) {
+        res.status(404).send({ error: "No match day found for the given bet. Maybe we can't process your timezone correctly."});
+        return;
     }
+    const matchDay = await db.MatchDayModel.findOne(matchDayUnpopulated._id)
+        .populate("bets")
+        .populate("matches");
 
     // Check if there is already a bet for this match day from this account
     let betFromThisAccount = null;
@@ -39,7 +44,6 @@ exports.postBet = async (req, res) => {
 
     // Only place bet if it's placed 15 minutes before the first match of the day starts
     if(new Date().getTime() > firstMatchOfMatchDay.dateTime.getTime() - (15 * 60 * 1000)) {
-        console.log("placed too late");
         res.status(403).send({ error: "The bet is placed too late (less than 15 minutes before the first game of the day starts)."});
         return;
     }
