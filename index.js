@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const fs = require('fs');
 var cors = require('cors');
 const jwt = require('jsonwebtoken');
+const history = require('connect-history-api-fallback');
 const mongoString = process.env.DATABASE_URL;
 
 const app = express();
@@ -18,8 +19,11 @@ app.use(cors())
 // app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Use connect history api fallback
+app.use(history());
+
 // simple route
-app.get("/", (req, res) => {
+app.get("/backend", (req, res) => {
     res.json({ message: "Hello from lolesportswithyourfriends backend." });
 });
 
