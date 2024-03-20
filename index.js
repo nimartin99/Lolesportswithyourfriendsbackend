@@ -6,6 +6,7 @@ var cors = require('cors');
 const jwt = require('jsonwebtoken');
 const history = require('connect-history-api-fallback');
 const mongoString = process.env.DATABASE_URL;
+const expressErrorMiddleware = require('./middlewares/expressError');
 
 const app = express();
 
@@ -20,12 +21,14 @@ app.use(cors())
 app.use(express.json());
 
 // Use connect history api fallback
-app.use(history());
+// app.use(history());
 
 // simple route
 app.get("/backend", (req, res) => {
     res.json({ message: "Hello from lolesportswithyourfriends backend." });
 });
+
+// app.use(expressErrorMiddleware);
 
 const options = {
     // key: fs.readFileSync('server.key'),
