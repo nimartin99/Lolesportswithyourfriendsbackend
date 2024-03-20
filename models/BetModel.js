@@ -31,6 +31,10 @@ const dataSchema = new mongoose.Schema({
         type: Schema.Types.ObjectId,
         ref: 'Player'
     },
+    score: {
+        required: false,
+        type: Number,
+    }
 })
 
 module.exports = mongoose.model('Bet', dataSchema)

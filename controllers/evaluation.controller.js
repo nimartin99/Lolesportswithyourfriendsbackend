@@ -177,6 +177,7 @@ exports.finishMatchDay = async (req, res) => {
 
     if(matchDay.state === "finished") {
         res.status(423).send();
+        return;
     }
 
     const matchDayPlayerEvaluations = [];
@@ -242,10 +243,13 @@ exports.finishMatchDay = async (req, res) => {
         if(coachPlayer) {
             accountScore += coachPlayer.basePoints;
         }
+        await db.BetModel.findByIdAndUpdate(bet._id, {
+            score: accountScore,
+        });
         await db.AccountModel.findByIdAndUpdate(bet.account, {
             $inc: { score: accountScore }
-        })
-    }))
+        });
+    }));
 
     await db.MatchDayModel.findByIdAndUpdate(matchDay._id, {
         state: 'finished',

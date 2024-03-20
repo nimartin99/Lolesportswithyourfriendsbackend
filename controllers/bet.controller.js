@@ -111,5 +111,8 @@ exports.getMyRoster = async (req, res) => {
     } else {
         res.status(404).send();
     }
-
 };
+
+exports.getBetsOnMatchDay = async (req, res) => {
+
+}
