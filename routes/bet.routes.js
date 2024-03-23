@@ -19,4 +19,14 @@ module.exports = function(app) {
         "/api/myroster/:matchDate",
         [authJwt.verifyToken], controller.getMyRoster
     );
+
+    app.get(
+        "/api/bets/:matchDate",
+        [authJwt.verifyToken], controller.getBetsOnMatchDay
+    );
+
+    app.get(
+        "/api/bet/matchDay/:matchDate/account/:accountId",
+        [authJwt.verifyToken], controller.getBetFromAccountOnMatchDay
+    );
 };

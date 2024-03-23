@@ -21,7 +21,7 @@ module.exports = function(app) {
     );
 
     app.get(
-        "/api/evaluationsOfMatchDay/:evaluationId",
+        "/api/evaluationsOfMatchDay/:matchDayId",
         [authJwt.verifyToken], controller.getEvaluationsOfMatchDay
     );
 

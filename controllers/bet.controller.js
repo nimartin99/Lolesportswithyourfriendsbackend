@@ -1,4 +1,5 @@
 const db = require("./../models");
+const evaluationActions = require("../actions/evaluation.actions");
 
 exports.postBet = async (req, res) => {
     const matchDate = new Date(req.body.matchDate);
@@ -114,5 +115,37 @@ exports.getMyRoster = async (req, res) => {
 };
 
 exports.getBetsOnMatchDay = async (req, res) => {
+    const matchDay = await db.MatchDayModel.findOne({ _id: req.params.matchDate })
+        .populate("bets")
+        .populate({ path: 'bets', populate: [
+                { path: 'topPlayer' },
+                { path: 'junglePlayer' },
+                { path: 'midPlayer' },
+                { path: 'botPlayer' },
+                { path: 'supportPlayer' },
+                { path: 'coachPlayer' },
+            ]});
+    if(!matchDay || !matchDay.bets) {
+        res.status(404).send();
+    } else {
+        res.status(200).send(matchDay.bets);
+    }
+}
 
+exports.getBetFromAccountOnMatchDay = async (req, res) => {
+    const matchDay = await db.MatchDayModel.findOne({ _id: req.params.matchDate })
+        .populate("bets")
+        .populate({ path: 'matches', populate: { path: 'evaluation' }});
+    if(!matchDay || !matchDay.bets) {
+        res.status(404).send();
+        return;
+    }
+
+    const betFromAccount = matchDay.bets.find((bet) => bet.account.equals(req.params.accountId));
+
+    if(betFromAccount) {
+        res.status(200).send(betFromAccount);
+    } else {
+        res.status(404).send();
+    }
 }

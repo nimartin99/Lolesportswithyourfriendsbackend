@@ -1,4 +1,5 @@
 const db = require("./../models");
+const evaluationActions = require("../actions/evaluation.actions");
 
 exports.postEvaluation = async (req, res) => {
     let match = await db.MatchModel.findById(req.body.matchId).populate('evaluation');
@@ -137,31 +138,17 @@ exports.getEvaluation = async (req, res) => {
 };
 
 exports.getEvaluationsOfMatchDay = async (req, res) => {
-    if(!req.params.evaluationId) {
+    if(!req.params.matchDayId) {
         res.status(400).send();
         return;
     }
-
-    const matchDay = await db.MatchDayModel.findById(req.params.evaluationId)
+    const matchDay = await db.MatchDayModel.findById(req.params.matchDayId)
         .populate("matches");
     if(!matchDay) {
         res.status(400).send();
         return;
     }
-
-    const matchDayEvaluations = [];
-    await Promise.all(matchDay.matches.map(async (match) => {
-        if(match.evaluation) {
-            const evaluation = await db.EvaluationModel.findById(match.evaluation);
-            let i;
-            let j = 6;
-            for (i = 0; i < j; i++) {
-                evaluation.blueTeam.players[i] = await db.PlayerEvaluationModel.findById(evaluation.blueTeam.players[i]);
-                evaluation.redTeam.players[i] = await db.PlayerEvaluationModel.findById(evaluation.redTeam.players[i]);
-            }
-            matchDayEvaluations.push(evaluation);
-        }
-    }));
+    const matchDayEvaluations = await evaluationActions.getEvaluationsOfMatchDay(matchDay);
     res.status(200).send(matchDayEvaluations);
 };
 
