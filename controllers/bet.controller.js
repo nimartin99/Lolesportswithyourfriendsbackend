@@ -43,10 +43,28 @@ exports.postBet = async (req, res) => {
         res.status(404).send({ error: "No match on the day you want to place the bet."});
     }
 
-    // Only place bet if it's placed 15 minutes before the first match of the day starts
+    // Only place bet if it's placed tes before the first match of the day starts
     if(new Date().getTime() > firstMatchOfMatchDay.dateTime.getTime() - (15 * 60 * 1000)) {
-        res.status(403).send({ error: "The bet is placed too late (less than 15 minutes before the first game of the day starts)."});
+        res.status(403).send({ error: "You can only save your roster until 15 minutes before the first game starts."});
         return;
+    }
+
+    // Check if there is a maximum of 2 players per team in the roster
+    const playersAmountPerTeam = {};
+    const players = [ req.body.topPlayer, req.body.junglePlayer, req.body.midPlayer, req.body.botPlayer, req.body.supportPlayer ];
+    players.forEach((player) => {
+        if(playersAmountPerTeam[player.team]) {
+            playersAmountPerTeam[player.team]++;
+        } else {
+            playersAmountPerTeam[player.team] = 1;
+        }
+    })
+    console.log(playersAmountPerTeam);
+    for (const teamId in playersAmountPerTeam) {
+        if (playersAmountPerTeam[teamId] > 2) {
+            // More than 2 players found for this team
+            res.status(403).send({ error: "The roster has more than 2 players of the same team (excluding coach)."});
+        }
     }
 
     if(betFromThisAccount !== null) {
@@ -102,12 +120,12 @@ exports.getMyRoster = async (req, res) => {
 
     if(betFromThisAccount != null) {
         const betFromAccount = await db.BetModel.findById(betFromThisAccount._id)
-            .populate({ path: 'topPlayer', populate: { path: 'team' }})
-            .populate({ path: 'junglePlayer', populate: { path: 'team' }})
-            .populate({ path: 'midPlayer', populate: { path: 'team' }})
-            .populate({ path: 'botPlayer', populate: { path: 'team' }})
-            .populate({ path: 'supportPlayer', populate: { path: 'team' }})
-            .populate({ path: 'coachPlayer', populate: { path: 'team' }});
+            .populate({ path: 'topPlayer'})
+            .populate({ path: 'junglePlayer'})
+            .populate({ path: 'midPlayer'})
+            .populate({ path: 'botPlayer'})
+            .populate({ path: 'supportPlayer'})
+            .populate({ path: 'coachPlayer'});
         res.status(200).send(betFromAccount);
     } else {
         res.status(404).send();
