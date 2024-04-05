@@ -16,10 +16,13 @@ const dataSchema = new mongoose.Schema({
         required: true,
         type: Date
     },
-    evaluation: {
+    evaluation: [{
         type: Schema.Types.ObjectId,
         ref: 'Evaluation'
-    },
+    }],
+    matchType: {
+        type: String,
+    }
 })
 
 module.exports = mongoose.model('Match', dataSchema)
