@@ -75,20 +75,20 @@ require('./routes/bet.routes')(app);
 require('./routes/evaluation.routes')(app);
 
 async function initial() {
-    // try {
-    //     const matches = await db.MatchModel.find({}); // Retrieve all Match documents
-    //
-    //     for (const match of matches) {
-    //         // Update evaluation field to be an array containing the existing evaluation reference
-    //         // match.evaluation = [match.evaluation];
-    //         match.matchType = 'Bo1';
-    //         await match.save(); // Save the updated Match document
-    //     }
-    //
-    //     console.log('Data migration completed successfully.');
-    // } catch (error) {
-    //     console.error('Data migration failed:', error);
-    // }
+    try {
+        const matches = await db.MatchModel.find({}); // Retrieve all Match documents
+
+        for (const match of matches) {
+            // Update evaluation field to be an array containing the existing evaluation reference
+            // match.evaluation = [match.evaluation];
+            match.evaluation = match.evaluation[0];
+            await match.save(); // Save the updated Match document
+        }
+
+        console.log('Data migration completed successfully.');
+    } catch (error) {
+        console.error('Data migration failed:', error);
+    }
 
     const allRoles = db.AccountModel.find({});
     if(allRoles.length === 0) {

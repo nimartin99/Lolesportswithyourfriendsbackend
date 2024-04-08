@@ -113,15 +113,20 @@ exports.postEvaluation = async (req, res) => {
         },
     };
 
+    if(match.matchType === 'Bo1') {
+        if(match.evaluation) {
+            evaluation = await db.EvaluationModel.findByIdAndUpdate(match.evaluation, Object.assign({}, evaluation))
+        } else {
+            evaluation = await db.EvaluationModel.create(Object.assign({}, evaluation))
+        }
+        await db.MatchModel.findByIdAndUpdate(req.body.matchId, {
+            $push: { evaluation: evaluation },
+        });
+    } else if(match.matchType === 'Bo3') {
+        // 1
+    } else if(match.matchType === 'Bo5') {
 
-    if(match.evaluation) {
-        evaluation = await db.EvaluationModel.findByIdAndUpdate(match.evaluation, Object.assign({}, evaluation))
-    } else {
-        evaluation = await db.EvaluationModel.create(Object.assign({}, evaluation))
     }
-    await db.MatchModel.findByIdAndUpdate(req.body.matchId, {
-        evaluation,
-    });
 
     res.status(201).send({ match });
 };

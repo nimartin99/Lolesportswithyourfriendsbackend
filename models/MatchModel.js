@@ -16,7 +16,11 @@ const dataSchema = new mongoose.Schema({
         required: true,
         type: Date
     },
-    evaluation: [{
+    evaluation: {
+        type: Schema.Types.ObjectId,
+        ref: 'Evaluation'
+    },
+    boEvaluations: [{
         type: Schema.Types.ObjectId,
         ref: 'Evaluation'
     }],
